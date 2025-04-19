@@ -114,7 +114,11 @@ def RecommendSong(context: str, emotion: str) -> dict:
        max_dist = 3 * emotion_dist + 7 * context_dist
        max_index = i
   
-  return lyric_dataset.loc[max_index].to_dict()
+  return {
+    "artist": lyric_dataset.loc[max_index, "artist"],
+    "song": lyric_dataset.loc[max_index, "song"],
+    "lyric": lyric_dataset.loc[max_index, "lyric"]
+  }
 
 print("Embedding model loaded")
 
