@@ -10,7 +10,7 @@ from EmotionSpoon_AI import text_recognizer, sentiment_analyzer, music_recommend
 
 OCR = text_recognizer.TextRecognizer()
 analyzer = sentiment_analyzer.SentimentAnalyzer()
-recommender = music_recommender.SongRecommender("database/lyric_dataset.csv")
+recommender = music_recommender.SongRecommender()
 
 app = FastAPI()
 app.add_middleware(
