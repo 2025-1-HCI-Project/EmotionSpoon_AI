@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEmbeddings
 import torch, os
 
+from EmotionSpoon_AI import music_database
+
 class SongRecommender:
-    def __init__(self, dataset):
+    def __init__(self):
         load_dotenv()
 
         # .env 파일에 있는 hugging face token 로드
@@ -24,7 +26,7 @@ class SongRecommender:
         model_name = "sentence-transformers/all-MiniLM-L6-v2"
         self.embedding_model = HuggingFaceEmbeddings(model_name=model_name, model_kwargs={'device': device}, encode_kwargs={'normalize_embeddings': True})
 
-        self.lyric_dataset = pd.read_csv(dataset)
+        self.music_database = music_database.MusicDatabase().Retrieve()
         print("Embedding model loaded")
 
     # 완전 동일하면 1, orthogonal하면 0, 반대 의미의 경우 -1
@@ -37,9 +39,9 @@ class SongRecommender:
 
         emotion_embedding = self.embedding_model.embed_query(emotion)
         context_embedding = self.embedding_model.embed_query(context)
-        for i in range(len(self.lyric_dataset)):
-            emotion_dist = self._cosine_similarity(emotion_embedding, eval(self.lyric_dataset.loc[i, "emotion_embedding"]))
-            context_dist = self._cosine_similarity(context_embedding, eval(self.lyric_dataset.loc[i, "lyric_embedding"]))
+        for i in range(len(self.music_database)):
+            emotion_dist = self._cosine_similarity(emotion_embedding, eval(self.music_database.loc[i, "emotion_embedding"]))
+            context_dist = self._cosine_similarity(context_embedding, eval(self.music_database.loc[i, "lyric_embedding"]))
 
             # 감정 : 맥락 = 3 : 7 ensemble
             if max_dist < 3 * emotion_dist + 7 * context_dist:
@@ -47,7 +49,7 @@ class SongRecommender:
                 max_index = i
         
         return {
-            "artist": self.lyric_dataset.loc[max_index, "artist"],
-            "song": self.lyric_dataset.loc[max_index, "song"],
-            "lyric": self.lyric_dataset.loc[max_index, "lyric"]
+            "artist": self.music_database.loc[max_index, "artist"],
+            "song": self.music_database.loc[max_index, "song"],
+            "lyric": self.music_database.loc[max_index, "lyric"]
         }
