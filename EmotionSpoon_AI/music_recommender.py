@@ -34,22 +34,25 @@ class SongRecommender:
         return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
     def recommend(self, context: str, emotion: str) -> dict:
-        max_index = 0
-        max_dist = float('-inf')
+        music_playlist = []
 
         emotion_embedding = self.embedding_model.embed_query(emotion)
         context_embedding = self.embedding_model.embed_query(context)
         for i in range(len(self.music_database)):
-            emotion_dist = self._cosine_similarity(emotion_embedding, eval(self.music_database.loc[i, "emotion_embedding"]))
-            context_dist = self._cosine_similarity(context_embedding, eval(self.music_database.loc[i, "lyric_embedding"]))
+            music_data = self.music_database.loc[i].to_dict()
+
+            emotion_dist = self._cosine_similarity(emotion_embedding, eval(music_data["emotion_embedding"]))
+            context_dist = self._cosine_similarity(context_embedding, eval(music_data["lyric_embedding"]))
 
             # 감정 : 맥락 = 3 : 7 ensemble
-            if max_dist < 3 * emotion_dist + 7 * context_dist:
-                max_dist = 3 * emotion_dist + 7 * context_dist
-                max_index = i
+            music_playlist.append({
+                "artist": music_data["artist"],
+                "song": music_data["song"],
+                "lyric": music_data["lyric"],
+                "link": music_data["link"],
+                "similarity": 3 * emotion_dist + 7 * context_dist
+            })
         
-        return {
-            "artist": self.music_database.loc[max_index, "artist"],
-            "song": self.music_database.loc[max_index, "song"],
-            "lyric": self.music_database.loc[max_index, "lyric"]
-        }
+        music_playlist.sort(key=lambda music: music["similarity"], reverse=True)
+        
+        return music_playlist[:10]

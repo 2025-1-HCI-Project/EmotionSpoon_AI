@@ -31,8 +31,8 @@ async def test():
 @app.post("/recommend")
 async def analyze_sentiment(request: PostRequest):
     sentiment = analyzer.analyze(request.input_data)
-    song = recommender.recommend(context=request.input_data, emotion=sentiment)
-    return {"sentiment": sentiment, **song}
+    playlist = recommender.recommend(context=request.input_data, emotion=sentiment)
+    return {"sentiment": sentiment, "playlist": playlist}
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
